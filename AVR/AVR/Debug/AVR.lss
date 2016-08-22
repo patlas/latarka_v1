@@ -1,0 +1,341 @@
+
+AVR.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000186  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000001fa  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000008  00800060  00800060  000001fa  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  000001fa  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000022c  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000078  00000000  00000000  00000268  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   000003ef  00000000  00000000  000002e0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 000002dd  00000000  00000000  000006cf  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   000003e5  00000000  00000000  000009ac  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000000e4  00000000  00000000  00000d94  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    000001e7  00000000  00000000  00000e78  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    0000014a  00000000  00000000  0000105f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000048  00000000  00000000  000011a9  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0e c0       	rjmp	.+28     	; 0x1e <__ctors_end>
+   2:	1b c0       	rjmp	.+54     	; 0x3a <__bad_interrupt>
+   4:	1a c0       	rjmp	.+52     	; 0x3a <__bad_interrupt>
+   6:	19 c0       	rjmp	.+50     	; 0x3a <__bad_interrupt>
+   8:	18 c0       	rjmp	.+48     	; 0x3a <__bad_interrupt>
+   a:	17 c0       	rjmp	.+46     	; 0x3a <__bad_interrupt>
+   c:	16 c0       	rjmp	.+44     	; 0x3a <__bad_interrupt>
+   e:	15 c0       	rjmp	.+42     	; 0x3a <__bad_interrupt>
+  10:	1c c0       	rjmp	.+56     	; 0x4a <__vector_8>
+  12:	13 c0       	rjmp	.+38     	; 0x3a <__bad_interrupt>
+  14:	12 c0       	rjmp	.+36     	; 0x3a <__bad_interrupt>
+  16:	11 c0       	rjmp	.+34     	; 0x3a <__bad_interrupt>
+  18:	10 c0       	rjmp	.+32     	; 0x3a <__bad_interrupt>
+  1a:	0f c0       	rjmp	.+30     	; 0x3a <__bad_interrupt>
+  1c:	0e c0       	rjmp	.+28     	; 0x3a <__bad_interrupt>
+
+0000001e <__ctors_end>:
+  1e:	11 24       	eor	r1, r1
+  20:	1f be       	out	0x3f, r1	; 63
+  22:	cf ed       	ldi	r28, 0xDF	; 223
+  24:	cd bf       	out	0x3d, r28	; 61
+
+00000026 <__do_clear_bss>:
+  26:	20 e0       	ldi	r18, 0x00	; 0
+  28:	a0 e6       	ldi	r26, 0x60	; 96
+  2a:	b0 e0       	ldi	r27, 0x00	; 0
+  2c:	01 c0       	rjmp	.+2      	; 0x30 <.do_clear_bss_start>
+
+0000002e <.do_clear_bss_loop>:
+  2e:	1d 92       	st	X+, r1
+
+00000030 <.do_clear_bss_start>:
+  30:	a8 36       	cpi	r26, 0x68	; 104
+  32:	b2 07       	cpc	r27, r18
+  34:	e1 f7       	brne	.-8      	; 0x2e <.do_clear_bss_loop>
+  36:	59 d0       	rcall	.+178    	; 0xea <main>
+  38:	a4 c0       	rjmp	.+328    	; 0x182 <_exit>
+
+0000003a <__bad_interrupt>:
+  3a:	e2 cf       	rjmp	.-60     	; 0x0 <__vectors>
+
+0000003c <adc_start>:
+	
+}
+
+void adc_start(void)
+{
+	ADCSRA |= _BV(ADSC);
+  3c:	36 9a       	sbi	0x06, 6	; 6
+  3e:	08 95       	ret
+
+00000040 <adc_set_channel>:
+}
+
+
+void adc_set_channel(uint8_t channel) // 0 - 3
+{
+	uint8_t mux = ADMUX;
+  40:	97 b1       	in	r25, 0x07	; 7
+	mux &= ~(_BV(MUX1) | _BV(MUX0));
+  42:	9c 7f       	andi	r25, 0xFC	; 252
+	mux |= channel;
+  44:	89 2b       	or	r24, r25
+	ADMUX = mux;
+  46:	87 b9       	out	0x07, r24	; 7
+  48:	08 95       	ret
+
+0000004a <__vector_8>:
+adc_t adc[2];
+
+
+volatile uint8_t index = 0;
+ISR(ADC_vect)
+{
+  4a:	1f 92       	push	r1
+  4c:	0f 92       	push	r0
+  4e:	0f b6       	in	r0, 0x3f	; 63
+  50:	0f 92       	push	r0
+  52:	11 24       	eor	r1, r1
+  54:	2f 93       	push	r18
+  56:	3f 93       	push	r19
+  58:	4f 93       	push	r20
+  5a:	5f 93       	push	r21
+  5c:	6f 93       	push	r22
+  5e:	7f 93       	push	r23
+  60:	8f 93       	push	r24
+  62:	9f 93       	push	r25
+  64:	af 93       	push	r26
+  66:	bf 93       	push	r27
+  68:	ef 93       	push	r30
+  6a:	ff 93       	push	r31
+	if(ADC < ADC_COMP_VAL)
+  6c:	84 b1       	in	r24, 0x04	; 4
+  6e:	95 b1       	in	r25, 0x05	; 5
+	{
+		*(adc[index].OCR) -= STEP;
+	}
+	else if(ADC > ADC_COMP_VAL)
+  70:	84 b1       	in	r24, 0x04	; 4
+  72:	95 b1       	in	r25, 0x05	; 5
+  74:	89 2b       	or	r24, r25
+  76:	89 f0       	breq	.+34     	; 0x9a <__vector_8+0x50>
+	{
+		*(adc[index].OCR) += STEP;
+  78:	20 91 60 00 	lds	r18, 0x0060	; 0x800060 <_edata>
+  7c:	82 2f       	mov	r24, r18
+  7e:	90 e0       	ldi	r25, 0x00	; 0
+  80:	82 0f       	add	r24, r18
+  82:	91 1d       	adc	r25, r1
+  84:	82 0f       	add	r24, r18
+  86:	91 1d       	adc	r25, r1
+  88:	fc 01       	movw	r30, r24
+  8a:	ee 59       	subi	r30, 0x9E	; 158
+  8c:	ff 4f       	sbci	r31, 0xFF	; 255
+  8e:	01 80       	ldd	r0, Z+1	; 0x01
+  90:	f2 81       	ldd	r31, Z+2	; 0x02
+  92:	e0 2d       	mov	r30, r0
+  94:	80 81       	ld	r24, Z
+  96:	86 5f       	subi	r24, 0xF6	; 246
+  98:	80 83       	st	Z, r24
+	}
+	
+	if(++index > 1)
+  9a:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
+  9e:	8f 5f       	subi	r24, 0xFF	; 255
+  a0:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+  a4:	82 30       	cpi	r24, 0x02	; 2
+  a6:	10 f0       	brcs	.+4      	; 0xac <__vector_8+0x62>
+		index = 0;
+  a8:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <_edata>
+
+	adc_set_channel(adc[index].channel); // wait to correct channel change -> no free running mode -> manual trigger in interrupt!!!
+  ac:	20 91 60 00 	lds	r18, 0x0060	; 0x800060 <_edata>
+  b0:	82 2f       	mov	r24, r18
+  b2:	90 e0       	ldi	r25, 0x00	; 0
+  b4:	82 0f       	add	r24, r18
+  b6:	91 1d       	adc	r25, r1
+  b8:	82 0f       	add	r24, r18
+  ba:	91 1d       	adc	r25, r1
+  bc:	fc 01       	movw	r30, r24
+  be:	ee 59       	subi	r30, 0x9E	; 158
+  c0:	ff 4f       	sbci	r31, 0xFF	; 255
+  c2:	80 81       	ld	r24, Z
+  c4:	bd df       	rcall	.-134    	; 0x40 <adc_set_channel>
+	adc_start();
+  c6:	ba df       	rcall	.-140    	; 0x3c <adc_start>
+}
+  c8:	ff 91       	pop	r31
+  ca:	ef 91       	pop	r30
+  cc:	bf 91       	pop	r27
+  ce:	af 91       	pop	r26
+  d0:	9f 91       	pop	r25
+  d2:	8f 91       	pop	r24
+  d4:	7f 91       	pop	r23
+  d6:	6f 91       	pop	r22
+  d8:	5f 91       	pop	r21
+  da:	4f 91       	pop	r20
+  dc:	3f 91       	pop	r19
+  de:	2f 91       	pop	r18
+  e0:	0f 90       	pop	r0
+  e2:	0f be       	out	0x3f, r0	; 63
+  e4:	0f 90       	pop	r0
+  e6:	1f 90       	pop	r1
+  e8:	18 95       	reti
+
+000000ea <main>:
+
+int main(void)
+{
+	//sei();
+
+	adc[0].channel = 1;
+  ea:	e2 e6       	ldi	r30, 0x62	; 98
+  ec:	f0 e0       	ldi	r31, 0x00	; 0
+  ee:	81 e0       	ldi	r24, 0x01	; 1
+  f0:	80 83       	st	Z, r24
+	adc[0].OCR = OCR1A;
+  f2:	8e b5       	in	r24, 0x2e	; 46
+  f4:	90 e0       	ldi	r25, 0x00	; 0
+  f6:	92 83       	std	Z+2, r25	; 0x02
+  f8:	81 83       	std	Z+1, r24	; 0x01
+	adc[1].channel = 3;
+  fa:	83 e0       	ldi	r24, 0x03	; 3
+  fc:	83 83       	std	Z+3, r24	; 0x03
+	adc[1].OCR = OCR1B;
+  fe:	8b b5       	in	r24, 0x2b	; 43
+ 100:	90 e0       	ldi	r25, 0x00	; 0
+ 102:	95 83       	std	Z+5, r25	; 0x05
+ 104:	84 83       	std	Z+4, r24	; 0x04
+
+	adc_channel = 0;
+ 106:	10 92 61 00 	sts	0x0061, r1	; 0x800061 <adc_channel>
+
+	pwm_init();
+ 10a:	1d d0       	rcall	.+58     	; 0x146 <pwm_init>
+	//adc_init();
+	//adc_start();
+	DDRB |=  1<<1 | 1<<0;
+ 10c:	87 b3       	in	r24, 0x17	; 23
+ 10e:	83 60       	ori	r24, 0x03	; 3
+ 110:	87 bb       	out	0x17, r24	; 23
+	PORTB &= ~(1<<PORTB0);
+ 112:	c0 98       	cbi	0x18, 0	; 24
+
+	OCR1A = 110;
+ 114:	8e e6       	ldi	r24, 0x6E	; 110
+ 116:	8e bd       	out	0x2e, r24	; 46
+	uint16_t x = 0;//ADC;
+
+    while (1) 
+    {
+		OCR1A = x;
+ 118:	1e bc       	out	0x2e, r1	; 46
+		x+= 10;
+ 11a:	8a e0       	ldi	r24, 0x0A	; 10
+ 11c:	90 e0       	ldi	r25, 0x00	; 0
+		if(x>250) x=0;
+ 11e:	30 e0       	ldi	r19, 0x00	; 0
+ 120:	20 e0       	ldi	r18, 0x00	; 0
+ 122:	02 c0       	rjmp	.+4      	; 0x128 <main+0x3e>
+ 124:	83 2f       	mov	r24, r19
+ 126:	92 2f       	mov	r25, r18
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 128:	4f ef       	ldi	r20, 0xFF	; 255
+ 12a:	50 e7       	ldi	r21, 0x70	; 112
+ 12c:	62 e0       	ldi	r22, 0x02	; 2
+ 12e:	41 50       	subi	r20, 0x01	; 1
+ 130:	50 40       	sbci	r21, 0x00	; 0
+ 132:	60 40       	sbci	r22, 0x00	; 0
+ 134:	e1 f7       	brne	.-8      	; 0x12e <main+0x44>
+ 136:	00 c0       	rjmp	.+0      	; 0x138 <main+0x4e>
+ 138:	00 00       	nop
+	OCR1A = 110;
+	uint16_t x = 0;//ADC;
+
+    while (1) 
+    {
+		OCR1A = x;
+ 13a:	8e bd       	out	0x2e, r24	; 46
+		x+= 10;
+ 13c:	0a 96       	adiw	r24, 0x0a	; 10
+		if(x>250) x=0;
+ 13e:	8b 3f       	cpi	r24, 0xFB	; 251
+ 140:	91 05       	cpc	r25, r1
+ 142:	80 f7       	brcc	.-32     	; 0x124 <main+0x3a>
+ 144:	f1 cf       	rjmp	.-30     	; 0x128 <main+0x3e>
+
+00000146 <pwm_init>:
+
+
+void pwm_init(void)
+{
+	
+	PLLCSR |= _BV(PLLE); // set PLL as clock source (divided by 4 => 16MHz core clock)
+ 146:	87 b5       	in	r24, 0x27	; 39
+ 148:	82 60       	ori	r24, 0x02	; 2
+ 14a:	87 bd       	out	0x27, r24	; 39
+ 14c:	8f e1       	ldi	r24, 0x1F	; 31
+ 14e:	9e e4       	ldi	r25, 0x4E	; 78
+ 150:	01 97       	sbiw	r24, 0x01	; 1
+ 152:	f1 f7       	brne	.-4      	; 0x150 <pwm_init+0xa>
+ 154:	00 c0       	rjmp	.+0      	; 0x156 <pwm_init+0x10>
+ 156:	00 00       	nop
+	//while(PLLCSR & _BV(PLOCK)); // wait until PLL is being locked to 64MHz
+	_delay_ms(10);
+	PLLCSR |= _BV(PCKE); //enable asynchronous mode 64MHz from PLL source
+ 158:	87 b5       	in	r24, 0x27	; 39
+ 15a:	84 60       	ori	r24, 0x04	; 4
+ 15c:	87 bd       	out	0x27, r24	; 39
+
+	TCCR1 |= _BV(PWM1A); //enable PWM channel A
+ 15e:	80 b7       	in	r24, 0x30	; 48
+ 160:	80 64       	ori	r24, 0x40	; 64
+ 162:	80 bf       	out	0x30, r24	; 48
+	TCCR1 |= _BV(COM1A0) | _BV(COM1A1); //OC1x set on compare match
+ 164:	80 b7       	in	r24, 0x30	; 48
+ 166:	80 63       	ori	r24, 0x30	; 48
+ 168:	80 bf       	out	0x30, r24	; 48
+	TCCR1 |= _BV(CS10); // asynchronous PCK clock
+ 16a:	80 b7       	in	r24, 0x30	; 48
+ 16c:	81 60       	ori	r24, 0x01	; 1
+ 16e:	80 bf       	out	0x30, r24	; 48
+	GTCCR |= _BV(PWM1B); // enable PWM channel B
+ 170:	8c b5       	in	r24, 0x2c	; 44
+ 172:	80 64       	ori	r24, 0x40	; 64
+ 174:	8c bd       	out	0x2c, r24	; 44
+	GTCCR |= _BV(COM1B0) | _BV(COM1B1); //OC1x set on compare match 
+ 176:	8c b5       	in	r24, 0x2c	; 44
+ 178:	80 63       	ori	r24, 0x30	; 48
+ 17a:	8c bd       	out	0x2c, r24	; 44
+
+	OCR1C = 127; // value as count limit overflow -> 500kHz PWM mode
+ 17c:	8f e7       	ldi	r24, 0x7F	; 127
+ 17e:	8d bd       	out	0x2d, r24	; 45
+ 180:	08 95       	ret
+
+00000182 <_exit>:
+ 182:	f8 94       	cli
+
+00000184 <__stop_program>:
+ 184:	ff cf       	rjmp	.-2      	; 0x184 <__stop_program>
