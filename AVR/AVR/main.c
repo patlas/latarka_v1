@@ -16,8 +16,9 @@
 
 
 
-#define ADC_COMP_VAL (uint16_t) 512//0//512
-#define STEP 10 //pwm step
+#define ADC_COMP_VAL (uint16_t) 35//0//512
+#define STEP 1 //pwm step
+#define PWM_MAX 127
 
 volatile uint8_t adc_channel; //??
 
@@ -36,12 +37,16 @@ ISR(ADC_vect)
 	//adc_val |= ((ADCH<<8) & 0xF00);
 	if(ADC < ADC_COMP_VAL)
 	{
-		*(adc[index].OCR) -= STEP;
+		*(adc[index].OCR) += STEP;
+		if(*(adc[index].OCR) > PWM_MAX)
+			*(adc[index].OCR) = PWM_MAX;
 		PORTB |= 1<<3;
 	}
 	else if(ADC > ADC_COMP_VAL)
 	{
-		*(adc[index].OCR) += STEP;
+		*(adc[index].OCR) -= STEP;
+		if(*(adc[index].OCR) < STEP)
+			*(adc[index].OCR) = STEP;
 		PORTB &= ~(1<<3);
 	}
 	
@@ -73,7 +78,7 @@ int main(void)
 	PORTB |= (1<<3);
 
 
-	OCR1A = 110;
+	//OCR1A = 110;
 	uint16_t x = 0;//ADC;
 	adc_start();
 	sei();
