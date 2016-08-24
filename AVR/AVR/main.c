@@ -16,7 +16,7 @@
 
 
 
-#define ADC_COMP_VAL (uint16_t) 0
+#define ADC_COMP_VAL (uint16_t) 0//512
 #define STEP 10 //pwm step
 
 volatile uint8_t adc_channel; //??
@@ -26,31 +26,36 @@ typedef struct adc_t {
 	uint8_t *OCR;
 }adc_t;
 
-adc_t adc[2];
+volatile adc_t adc[2];
 
 
 volatile uint8_t index = 0;
 ISR(ADC_vect)
 {
-	if(ADC < ADC_COMP_VAL)
+	/*if(ADC < ADC_COMP_VAL)
 	{
 		*(adc[index].OCR) -= STEP;
+		PORTB |= 1<<3;
 	}
 	else if(ADC > ADC_COMP_VAL)
 	{
 		*(adc[index].OCR) += STEP;
+		PORTB &= ~(1<<3);
 	}
 	
-	if(++index > 1)
-		index = 0;
+	//if(++index > 1)
+	//	index = 0;
 
 	adc_set_channel(adc[index].channel); // wait to correct channel change -> no free running mode -> manual trigger in interrupt!!!
+	PORTB ^= (1<<3);
+	*/
+	PORTB = ADCL;
 	adc_start();
 }
 
 int main(void)
 {
-	//sei();
+	sei();
 
 	adc[0].channel = 1;
 	adc[0].OCR = &OCR1A;
@@ -60,21 +65,25 @@ int main(void)
 	adc_channel = 0;
 
 	pwm_init();
-	//adc_init();
-	//adc_start();
-	DDRB |=  1<<1 | 1<<0;
+	adc_init();
+	
+	DDRB |=  1<<1 | 1<<0 | 1<<3;
+	DDRB &= ~(1<<2);
+
 	PORTB &= ~(1<<0);
+	PORTB |= (1<<3);
+
 
 	OCR1A = 110;
 	uint16_t x = 0;//ADC;
-
+	adc_start();
     while (1) 
     {
 		//OCR1A = x;
-		*(adc[0].OCR) = x;
+		/**(adc[0].OCR) = x;
 		x+= 10;
 		if(x>120) x=0;
-		_delay_ms(100);
+		_delay_ms(100);*/
     }
 }
 
