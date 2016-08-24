@@ -8,7 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#define F_CPU 8000000
+#define F_CPU 16000000
 #include <util/delay.h>
 
 #include "adc.h"
@@ -53,9 +53,9 @@ int main(void)
 	//sei();
 
 	adc[0].channel = 1;
-	adc[0].OCR = OCR1A;
+	adc[0].OCR = &OCR1A;
 	adc[1].channel = 3;
-	adc[1].OCR = OCR1B;
+	adc[1].OCR = &OCR1B;
 
 	adc_channel = 0;
 
@@ -63,16 +63,17 @@ int main(void)
 	//adc_init();
 	//adc_start();
 	DDRB |=  1<<1 | 1<<0;
-	PORTB &= ~(1<<PORTB0);
+	PORTB &= ~(1<<0);
 
 	OCR1A = 110;
 	uint16_t x = 0;//ADC;
 
     while (1) 
     {
-		OCR1A = x;
+		//OCR1A = x;
+		*(adc[0].OCR) = x;
 		x+= 10;
-		if(x>250) x=0;
+		if(x>120) x=0;
 		_delay_ms(100);
     }
 }
