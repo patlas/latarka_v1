@@ -31,25 +31,39 @@ volatile adc_t adc[2];
 
 
 volatile uint8_t index = 0;
+volatile uint8_t m_index = 0;
+volatile uint16_t adc_val = 0;
+volatile uint8_t pwm_val = STEP;
+
 ISR(ADC_vect)
 {
 	//uint16_t adc_val = ADCL;
 	//adc_val |= ((ADCH<<8) & 0xF00);
-	if(ADC < ADC_COMP_VAL)
+	adc_val += ADC;
+	m_index++;
+	adc_val /= 2;//m_index; 
+
+	if(m_index >= 10)
 	{
-		*(adc[index].OCR) += STEP;
-		if(*(adc[index].OCR) > PWM_MAX)
-			*(adc[index].OCR) = PWM_MAX;
-		PORTB |= 1<<3;
+		m_index = 0; /// odwrotna logika!!!!
+		if(adc_val < ADC_COMP_VAL)
+		{
+			pwm_val -= STEP;
+			*(adc[index].OCR) = pwm_val;
+			if(pwm_val < STEP)
+				pwm_val = STEP;
+			PORTB |= 1<<3;
+		}
+		else if(adc_val > ADC_COMP_VAL)
+		{
+			pwm_val += STEP;
+			*(adc[index].OCR) = pwm_val;
+			if(pwm_val > PWM_MAX)
+				pwm_val = PWM_MAX;
+			PORTB &= ~(1<<3);
+		}
+		//adc_val = 0;
 	}
-	else if(ADC > ADC_COMP_VAL)
-	{
-		*(adc[index].OCR) -= STEP;
-		if(*(adc[index].OCR) < STEP)
-			*(adc[index].OCR) = STEP;
-		PORTB &= ~(1<<3);
-	}
-	
 	//if(++index > 1)
 	//	index = 0;
 
