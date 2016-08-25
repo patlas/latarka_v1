@@ -16,7 +16,7 @@
 
 
 
-#define ADC_COMP_VAL (uint16_t) 35//0//512
+#define ADC_COMP_VAL (uint16_t) 20//0//512
 #define STEP 1 //pwm step
 #define PWM_MAX 127
 
@@ -33,7 +33,7 @@ volatile adc_t adc[2];
 volatile uint8_t index = 0;
 volatile uint8_t m_index = 0;
 volatile uint16_t adc_val = 0;
-volatile uint8_t pwm_val = STEP;
+volatile uint8_t pwm_val = PWM_MAX/2;
 
 ISR(ADC_vect)
 {

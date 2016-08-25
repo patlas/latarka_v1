@@ -14,9 +14,10 @@ void pwm_init(void)
 {
 	
 	PLLCSR |= _BV(PLLE); // set PLL as clock source (divided by 4 => 16MHz core clock)
-	//while(PLLCSR & _BV(PLOCK)); // wait until PLL is being locked to 64MHz
-	_delay_ms(10);
+	///while(!(PLLCSR & _BV(PLOCK))); // wait until PLL is being locked to 64MHz
+	_delay_ms(100);
 	PLLCSR |= _BV(PCKE); //enable asynchronous mode 64MHz from PLL source
+	/////while(PLLCSR & _BV(PLOCK)); // wait until PLL is being locked to 64MHz
 
 	TCCR1 |= _BV(PWM1A); //enable PWM channel A
 	TCCR1 |= _BV(COM1A0) | _BV(COM1A1); //OC1x set on compare match
