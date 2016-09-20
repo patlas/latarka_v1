@@ -16,7 +16,7 @@
 
 
 
-#define ADC_COMP_VAL (uint16_t) 20//0//512
+#define ADC_COMP_VAL (uint16_t) 5//0//512
 #define STEP 1 //pwm step
 #define PWM_MAX 127
 
@@ -49,18 +49,18 @@ ISR(ADC_vect)
 		if(adc_val < ADC_COMP_VAL)
 		{
 			pwm_val -= STEP;
-			*(adc[index].OCR) = pwm_val;
 			if(pwm_val < STEP)
 				pwm_val = STEP;
-			PORTB |= 1<<3;
+			*(adc[index].OCR) = pwm_val;
+			//PORTB |= 1<<3;
 		}
 		else if(adc_val > ADC_COMP_VAL)
 		{
 			pwm_val += STEP;
-			*(adc[index].OCR) = pwm_val;
 			if(pwm_val > PWM_MAX)
 				pwm_val = PWM_MAX;
-			PORTB &= ~(1<<3);
+			*(adc[index].OCR) = pwm_val;
+			//PORTB &= ~(1<<3);
 		}
 		//adc_val = 0;
 	}
@@ -82,11 +82,15 @@ int main(void)
 
 	adc_channel = 0;
 
+	DDRB |=  1<<1 | 1<<0 | 1<<3;
+	DDRB &= ~(1<<2);
+	PORTB &= ~(1<<3);
+	_delay_ms(500);
+
 	pwm_init();
 	adc_init();
 	
-	DDRB |=  1<<1 | 1<<0 | 1<<3;
-	DDRB &= ~(1<<2);
+	
 
 	PORTB &= ~(1<<0);
 	PORTB |= (1<<3);
@@ -94,15 +98,18 @@ int main(void)
 
 	//OCR1A = 110;
 	uint16_t x = 0;//ADC;
+	adc_set_channel(1);
 	adc_start();
 	sei();
+
     while (1) 
     {
 		//OCR1A = x;
 		/**(adc[0].OCR) = x;
 		x+= 10;
-		if(x>120) x=0;
-		_delay_ms(100);*/
+		if(x>120) x=0;*/
+		PORTB ^= (1<<3);
+		_delay_ms(500);
     }
 }
 

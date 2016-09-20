@@ -6,16 +6,14 @@
  */ 
 
 #include <avr/io.h>
-#define F_CPU 8000000
-#include <util/delay.h>
 
 
 void pwm_init(void)
 {
 	
 	PLLCSR |= _BV(PLLE); // set PLL as clock source (divided by 4 => 16MHz core clock)
-	///while(!(PLLCSR & _BV(PLOCK))); // wait until PLL is being locked to 64MHz
-	_delay_ms(100);
+	while(!(PLLCSR & _BV(PLOCK))); // wait until PLL is being locked to 64MHz
+	//_delay_ms(100);
 	PLLCSR |= _BV(PCKE); //enable asynchronous mode 64MHz from PLL source
 	/////while(PLLCSR & _BV(PLOCK)); // wait until PLL is being locked to 64MHz
 
@@ -26,6 +24,7 @@ void pwm_init(void)
 	GTCCR |= _BV(COM1B0) | _BV(COM1B1); //OC1x set on compare match 
 
 	OCR1C = 127; // value as count limit overflow -> 500kHz PWM mode
+
 }
 
 //OCR1A, OCR1B - > set to controll fullfilment
