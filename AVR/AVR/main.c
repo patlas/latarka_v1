@@ -14,9 +14,14 @@
 #include "adc.h"
 #include "pwm.h"
 
+/*	ADC Comp value #define ADC_COMP_VAL
+	180 -> 736mA
+	100 -> 440mA
+	50  -> 230mA
+	15  -> 83mA
+*/
 
-
-#define ADC_COMP_VAL (uint16_t) 5//0//512
+#define ADC_COMP_VAL (uint16_t) 180//0//512
 #define STEP 1 //pwm step
 #define PWM_MAX 127
 
@@ -108,8 +113,8 @@ int main(void)
 		/**(adc[0].OCR) = x;
 		x+= 10;
 		if(x>120) x=0;*/
-		PORTB ^= (1<<3);
-		_delay_ms(500);
+		//PORTB ^= (1<<3);
+		//_delay_ms(500);
     }
 }
 
